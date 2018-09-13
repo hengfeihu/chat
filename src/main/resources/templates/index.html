@@ -1,0 +1,65 @@
+<html>
+<head>
+    <title>chat UI</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="../static/css/chat.css" rel="stylesheet">
+    <script src="../static/js/jquery.min.js"></script>
+</head>
+<script>
+    document.getElementsByTagName('body').height = window.innerHeight;
+</script>
+<body class="box">
+<div class="container">
+    <div class="chatright">
+        <div class="top">
+            <span style="margin-left: 20px;">Chat</span>
+            <i class="fas fa-ellipsis-v"
+               style="font-size: 1.4em; position: absolute; right: 20px; color: gray;"></i>
+        </div>
+        <div class="center">
+            <ul id="content"></ul>
+        </div>
+        <div class="footer">
+                <textarea rows="5" cols="40" style="width: 100%; resize: none; border: none; " id="msg"
+                          placeholder="请在此输入要发送的内容..."></textarea>
+            <button class="sendbtn" onclick="send()" onkeyup="enter(event)">发送</button>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    var ws;
+    window.onload = connect;
+
+    function connect() {
+        if ('WebSocket' in window) {
+            ws = new WebSocket("ws://" + window.location.host + "/websocket");
+        } else if ('MozWebSocket' in window) {
+            ws = new MozWebSocket("ws://" + window.location.host + "/websocket/sockjs");
+        }
+        ws.onmessage = function (evnt) {
+            if (evnt.data) {
+                $("#content").append("<li class=\"msgleft\"><p class=\"msgcard\">" + JSON.stringify(event.data) + "</p></li>")
+            }
+        };
+    }
+
+    function send() {
+        var msg = $("#msg");
+        if (msg) {
+            var data = {
+                msg: $.trim(msg.val())
+            };
+            ws.send(JSON.stringify(data));
+            msg.val("").focus();
+        }
+    }
+
+    document.onkeydown = function (e) {
+        if (!e) e = window.event;
+        if ((e.keyCode || e.which) === 13) {
+            send();
+        }
+    }
+</script>
+</html>
